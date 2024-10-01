@@ -19,6 +19,8 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.stores.databinding.FragmentEditStoreBinding
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import java.util.concurrent.LinkedBlockingQueue
 
 class EditStoreFragment : Fragment() {
@@ -48,7 +50,8 @@ class EditStoreFragment : Fragment() {
            mIsEditMode = true
             getStore(id)
         }else{
-            Toast.makeText(activity, id.toString(), Toast.LENGTH_SHORT).show()
+            mIsEditMode = false
+            mStoreEntity = StoreEntity(name = "", phone = "", photoUrl = "")
         }
 
         //Conseguimos la actividad en la que se aloja el fragmente y casteamos
@@ -107,31 +110,63 @@ class EditStoreFragment : Fragment() {
                 true
             }
             R.id.action_save -> {
-                val store = StoreEntity(name =  mBinding.etName.text.toString().trim(),
-                    phone = mBinding.etPhone.text.toString().trim(),
-                    website = mBinding.etWebsite.text.toString().trim(),
-                    photoUrl = mBinding.etPhotoUrl.text.toString().trim())
+                if(mStoreEntity != null && validateFields(mBinding.tilPhotoUrl, mBinding.tilPhone,mBinding.tilName)){
+                    with(mStoreEntity!!){
+                        name =  mBinding.etName.text.toString().trim()
+                        phone = mBinding.etPhone.text.toString().trim()
+                        website = mBinding.etWebsite.text.toString().trim()
+                        photoUrl = mBinding.etPhotoUrl.text.toString().trim()
+                    }
 
-                val queue = LinkedBlockingQueue<Long?>()
-                Thread{
-                    val id = StoreApplication.database.storeDao().addStore(store)
-                    store.id = id
-                    queue.add(id)
-                }.start()
+                    val queue = LinkedBlockingQueue<StoreEntity?>()
+                    Thread{
+                        if(mIsEditMode) StoreApplication.database.storeDao().updateStore(mStoreEntity!!)
+                        else mStoreEntity!!.id = StoreApplication.database.storeDao().addStore(mStoreEntity!!)
+                        queue.add(mStoreEntity)
+                    }.start()
 
-                queue.take()?.let{
-                    mActivity?.addStore(store)
-                    hideKeyBoard()
+                    with(queue.take()){
 
-                    Toast.makeText(mActivity, getString(R.string.edit_store_message_save_success), Toast.LENGTH_SHORT)
-                        .show()
+                        hideKeyBoard()
 
-                    mActivity?.onBackPressedDispatcher?.onBackPressed()
+                        if(mIsEditMode){
+                            mActivity?.upDateStore(mStoreEntity!!)
+                            Snackbar.make(mBinding.root, R.string.edit_store_message_update_success, Toast.LENGTH_SHORT).show()
+                        }else {
+                            mActivity?.addStore(mStoreEntity!!)
+
+                            Toast.makeText(
+                                mActivity,
+                                getString(R.string.edit_store_message_save_success),
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                            mActivity?.onBackPressedDispatcher?.onBackPressed()
+                        }
+                    }
                 }
+
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun validateFields(vararg textFields: TextInputLayout):Boolean{
+        var isValid = true
+
+        for (textField in textFields){
+            if(textField.editText?.text.toString().trim().isEmpty()){
+                textField.error = getString(R.string.helper_required)
+                isValid = false
+            }
+        }
+
+        if(!isValid){
+            Snackbar.make(mBinding.root, R.string.edit_store_message_valid, Snackbar.LENGTH_SHORT).show()
+        }
+
+        return isValid
     }
 
     //Ocultar el teclado

@@ -137,6 +137,6 @@ class MainActivity : AppCompatActivity() , OnClickListener, MainAux{
     }
 
     override fun upDateStore(storeEntity: StoreEntity){
-        TODO("Not yet implemented")
+        mAdapter.update(storeEntity)
     }
 }
