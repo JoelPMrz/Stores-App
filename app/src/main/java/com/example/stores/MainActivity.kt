@@ -1,6 +1,5 @@
 package com.example.stores
 
-import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -101,7 +100,6 @@ class MainActivity : AppCompatActivity() , OnClickListener, MainAux{
     /*
     OnClickListener
     */
-
     override fun onClick(storeId: Long) {
         val args = Bundle()
         args.putLong(getString(R.string.arg_id), storeId)
@@ -125,7 +123,7 @@ class MainActivity : AppCompatActivity() , OnClickListener, MainAux{
 
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.dialog_options_title)
-            .setItems(items) { dialogInterface, i ->
+            .setItems(items) { _, i ->
                 when(i){
                     0 -> confirmDelete(storeEntity)
                     1 -> dial(storeEntity.phone)
@@ -138,13 +136,14 @@ class MainActivity : AppCompatActivity() , OnClickListener, MainAux{
     private fun confirmDelete(storeEntity: StoreEntity){
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.dialog_delete_title)
-            .setPositiveButton(R.string.dialog_delete_confirm) { dialogInterface, i ->
+            .setPositiveButton(R.string.dialog_delete_confirm) { _, _ ->
                 val queue = LinkedBlockingQueue<StoreEntity>()
                 Thread {
                     StoreApplication.database.storeDao().deleteStore(storeEntity)
                     queue.add(storeEntity)
                 }.start()
                 mAdapter.delete(queue.take())
+                Toast.makeText(this,R.string.edit_store_message_delete_success,Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton(R.string.dialog_delete_cancel, null)
             .show()

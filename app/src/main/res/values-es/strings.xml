@@ -23,4 +23,5 @@
     <string name="main_error_no_resolve">No se encontró ninguna app compatible</string>
     <string name="options_item_website">Ir al sitio web</string>
     <string name="options_item_call">Llamar</string>
+    <string name="edit_store_message_delete_success">"Tienda eliminada"</string>
 </resources>

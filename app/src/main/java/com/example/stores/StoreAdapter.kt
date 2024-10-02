@@ -58,7 +58,7 @@ class StoreAdapter(private var stores : MutableList<StoreEntity>, private var li
     fun update(storeEntity: StoreEntity) {
         val index = stores.indexOf(storeEntity)
         if(index != -1){
-            stores.set(index, storeEntity)
+            stores[index] = storeEntity
             notifyItemChanged(index)
         }
     }

@@ -26,4 +26,5 @@
     <string name="main_error_no_resolve">No compatible app found</string>
     <string name="options_item_website">Go to website</string>
     <string name="options_item_call">Call</string>
+    <string name="edit_store_message_delete_success">"Store deleted"</string>
 </resources>
