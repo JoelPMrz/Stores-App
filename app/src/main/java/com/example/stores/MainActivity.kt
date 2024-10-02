@@ -1,12 +1,17 @@
 package com.example.stores
 
+import android.content.DialogInterface
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.stores.databinding.ActivityMainBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.concurrent.LinkedBlockingQueue
 
 class MainActivity : AppCompatActivity() , OnClickListener, MainAux{
@@ -67,7 +72,7 @@ class MainActivity : AppCompatActivity() , OnClickListener, MainAux{
     //Configuración RecyclerView
     private fun setupRecyclerView() {
         mAdapter = StoreAdapter(mutableListOf(), this)
-        mGridLayout = GridLayoutManager(this, 2)
+        mGridLayout = GridLayoutManager(this, resources.getInteger(R.integer.main_columns))
 
         getStores()
 
@@ -111,19 +116,71 @@ class MainActivity : AppCompatActivity() , OnClickListener, MainAux{
             StoreApplication.database.storeDao().updateStore(storeEntity)
             queue.add(storeEntity)
         }.start()
-        mAdapter.update(queue.take())
+        upDateStore(queue.take())
 
     }
 
     override fun onDeleteStore(storeEntity: StoreEntity) {
-        val queue = LinkedBlockingQueue<StoreEntity>()
-        Thread{
-            StoreApplication.database.storeDao().deleteStore(storeEntity)
-            queue.add(storeEntity)
-        }.start()
-        mAdapter.delete(queue.take())
+        val items = resources.getStringArray(R.array.array_options_item)
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.dialog_options_title)
+            .setItems(items) { dialogInterface, i ->
+                when(i){
+                    0 -> confirmDelete(storeEntity)
+                    1 -> dial(storeEntity.phone)
+                    2 -> goToWebsite(storeEntity.website)
+                }
+            }
+            .show()
     }
 
+    private fun confirmDelete(storeEntity: StoreEntity){
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.dialog_delete_title)
+            .setPositiveButton(R.string.dialog_delete_confirm) { dialogInterface, i ->
+                val queue = LinkedBlockingQueue<StoreEntity>()
+                Thread {
+                    StoreApplication.database.storeDao().deleteStore(storeEntity)
+                    queue.add(storeEntity)
+                }.start()
+                mAdapter.delete(queue.take())
+            }
+            .setNegativeButton(R.string.dialog_delete_cancel, null)
+            .show()
+    }
+
+    //Abrir programa en segundo plano
+    private fun dial (phone: String){
+        val callIntent = Intent().apply {
+            action = Intent.ACTION_DIAL
+            data = Uri.parse("tel: $phone")
+        }
+        startIntent(callIntent)
+
+    }
+
+    //Lanzar navegador
+    private fun goToWebsite(website:String){
+        if(website.isEmpty()){
+            Toast.makeText(this, R.string.main_error_no_website, Toast.LENGTH_LONG).show()
+        }else{
+            val websiteIntent = Intent().apply {
+                action = Intent.ACTION_VIEW
+                data = Uri.parse(website)
+            }
+            startIntent(websiteIntent)
+        }
+    }
+
+    private fun startIntent(intent : Intent){
+        //Confirmamos si existe alguna actividad para evitar errores
+        if(intent.resolveActivity(packageManager) != null){
+            startActivity(intent)
+        }else{
+            Toast.makeText(this, R.string.main_error_no_resolve, Toast.LENGTH_LONG).show()
+        }
+    }
 
     /*
     MainAux

@@ -54,23 +54,41 @@ class EditStoreFragment : Fragment() {
             mStoreEntity = StoreEntity(name = "", phone = "", photoUrl = "")
         }
 
-        //Conseguimos la actividad en la que se aloja el fragmente y casteamos
+        setupActionBar()
+        setupTextFields()
+    }
+
+    private fun setupActionBar() {
+        //Obtenemos la actividad en la que se aloja el fragment y casteamos
         mActivity = activity as? MainActivity
 
         mActivity?.supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        //Cambiar titulo
-        mActivity?.supportActionBar?.title = getString(R.string.edit_store_title_add)
+        //Cambiar título
+        mActivity?.supportActionBar?.title = if(mIsEditMode) getString(R.string.edit_store_title_edit)
+            else getString(R.string.edit_store_title_add)
+
 
         setHasOptionsMenu(true)
+    }
 
-        mBinding.etPhotoUrl.addTextChangedListener{
-            Glide.with(this)
-                .load(mBinding.etPhotoUrl.text.toString())
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .centerCrop()
-                .into(mBinding.imgPhoto)
-
+    private fun setupTextFields() {
+        with(mBinding) {
+            etName.addTextChangedListener { validateFields(mBinding.tilName) }
+            etPhone.addTextChangedListener { validateFields(mBinding.tilPhone) }
+            etPhotoUrl.addTextChangedListener {
+                validateFields(mBinding.tilPhotoUrl)
+                loadImage(it.toString().trim())
+            }
         }
+    }
+
+    private fun loadImage(url : String){
+        Glide.with(this)
+            .load(url)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .centerCrop()
+            .into(mBinding.imgPhoto)
+
     }
 
     private fun getStore(id:Long) {
@@ -84,6 +102,8 @@ class EditStoreFragment : Fragment() {
             setUiStore(it!!)
         }
     }
+
+
 
     private fun setUiStore(it: StoreEntity) {
         with(mBinding){
@@ -159,6 +179,8 @@ class EditStoreFragment : Fragment() {
             if(textField.editText?.text.toString().trim().isEmpty()){
                 textField.error = getString(R.string.helper_required)
                 isValid = false
+            }else{
+                textField.error = null
             }
         }
 

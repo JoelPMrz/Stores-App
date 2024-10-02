@@ -74,14 +74,16 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:layout_marginTop="@dimen/common_padding_default">
-            
+
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilPhotoUrl"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:hint="@string/hint_photo_url"
-                style="@style/ThemeOverlay.Material3.AutoCompleteTextView.OutlinedBox">
+                app:helperText="@string/helper_required"
+                app:endIconMode="clear_text"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etPhotoUrl"

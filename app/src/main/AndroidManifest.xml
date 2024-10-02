@@ -13,7 +13,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Stores"
+        android:theme="@style/Base.Theme.Stores"
         tools:targetApi="31">
         <activity
             android:name=".MainActivity"
@@ -25,5 +25,17 @@
             </intent-filter>
         </activity>
     </application>
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.DIAL"/>
+        </intent>
+
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
+            <category android:name="android.intent.category.BROWSABLE"/>
+        </intent>
+    </queries>
 
 </manifest>
